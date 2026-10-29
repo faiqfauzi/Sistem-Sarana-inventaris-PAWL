@@ -1,0 +1,270 @@
+
+.laporan-page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 24px;
+  min-width: 0;
+}
+
+.laporan-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.laporan-header h1 {
+  margin: 0;
+  font-size: 25px;
+  font-weight: 700;
+  color: var(--text-primary, #1f2937);
+}
+
+.laporan-header p,
+.laporan-section-heading p {
+  margin: 6px 0 0;
+  color: var(--text-secondary, #6b7280);
+  font-size: 13px;
+}
+
+.laporan-card {
+  padding: 22px;
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 12px;
+  min-width: 0;
+}
+
+.laporan-card h3 {
+  margin: 0 0 18px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary, #1f2937);
+}
+
+.laporan-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  align-items: end;
+}
+
+.laporan-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.laporan-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary, #374151);
+}
+
+.laporan-field input,
+.laporan-field select {
+  width: 100%;
+  min-height: 40px;
+  padding: 9px 11px;
+  border: 1px solid var(--border-color, #d1d5db);
+  border-radius: 7px;
+  background: var(--input-bg, #fff);
+  color: var(--text-primary, #374151);
+  font: inherit;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.laporan-field input:focus,
+.laporan-field select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 10%);
+}
+
+.laporan-filter-actions,
+.laporan-export-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.laporan-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 9px 13px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.laporan-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.laporan-btn-primary {
+  background: #2563eb;
+  color: #fff;
+}
+
+.laporan-btn-secondary {
+  background: var(--card-bg, #fff);
+  border-color: var(--border-color, #d1d5db);
+  color: var(--text-primary, #374151);
+}
+
+.laporan-btn-excel {
+  background: #16834a;
+  color: #fff;
+}
+
+.laporan-btn-pdf {
+  background: #c83232;
+  color: #fff;
+}
+
+.laporan-section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.laporan-section-heading h3 {
+  margin-bottom: 0;
+}
+
+.laporan-text-button {
+  padding: 5px 0;
+  background: none;
+  border: none;
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.laporan-column-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 13px 18px;
+}
+
+.laporan-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--text-primary, #374151);
+  cursor: pointer;
+}
+
+.laporan-checkbox input,
+.laporan-table input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: #2563eb;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.laporan-table-heading {
+  align-items: center;
+}
+
+.laporan-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.laporan-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.laporan-table th,
+.laporan-table td {
+  padding: 12px 13px;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.laporan-table th {
+  background: var(--table-header-bg, #f8fafc);
+  color: var(--text-primary, #374151);
+  font-weight: 700;
+}
+
+.laporan-table tbody tr:hover {
+  background: var(--table-hover-bg, #f9fafb);
+}
+
+.laporan-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.laporan-table td a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.laporan-table td a:hover {
+  text-decoration: underline;
+}
+
+.laporan-error {
+  margin-bottom: 15px;
+  padding: 11px 13px;
+  border: 1px solid #fecaca;
+  border-radius: 7px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 13px;
+}
+
+@media (max-width: 1100px) {
+  .laporan-filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .laporan-column-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .laporan-page {
+    padding: 15px;
+    gap: 16px;
+  }
+
+  .laporan-card {
+    padding: 16px;
+  }
+
+  .laporan-filter-grid,
+  .laporan-column-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .laporan-section-heading,
+  .laporan-table-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

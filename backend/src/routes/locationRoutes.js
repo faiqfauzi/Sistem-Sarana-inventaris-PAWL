@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const db = require("../config/database");
 const QRCode = require("qrcode");
+const adminMiddleware = require("../middleware/adminMiddleware");
 
 const PAGE_SIZE = 10;
 
@@ -406,7 +407,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // POST /api/locations
-router.post("/", async (req, res) => {
+router.post("/", adminMiddleware, async (req, res) => {
   try {
     const nama_lokasi = String(req.body.nama_lokasi || "").trim();
     const keterangan = String(req.body.keterangan || "").trim();
@@ -464,7 +465,7 @@ router.post("/", async (req, res) => {
 });
 
 // PUT /api/locations/:id
-router.put("/:id", async (req, res) => {
+router.put("/:id", adminMiddleware, async (req, res) => {
   try {
     const id = Number(req.params.id);
     const nama_lokasi = String(req.body.nama_lokasi || "").trim();
@@ -539,7 +540,7 @@ router.put("/:id", async (req, res) => {
 });
 
 // DELETE /api/locations/:id
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", adminMiddleware, async (req, res) => {
   try {
     const id = Number(req.params.id);
 

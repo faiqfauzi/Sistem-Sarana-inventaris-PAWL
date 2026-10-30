@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import api from "./services/api";
 import "./App.css";
 
+import Login from "./pages/Login/Login";
+
 import MainLayout from "./layouts/MainLayout";
 import Sidebar from "./layouts/Sidebar";
 import Navbar from "./layouts/Navbar";
@@ -26,7 +28,8 @@ import EditPenanggungJawab from "./pages/penanggung-jawab/EditPenanggungJawab";
 import Inventaris from "./pages/SaranaInventaris/Inventaris";
 import TambahInventaris from "./pages/SaranaInventaris/TambahInventaris";
 import EditInventaris from "./pages/SaranaInventaris/EditInventaris";
-import DetailInventaris from "./pages/DetailInventaris";
+import DetailInventaris from "./pages/SaranaInventaris/DetailInventaris";
+import DetailRiwayat from "./pages/SaranaInventaris/DetailRiwayat";
 
 import Laporan from "./pages/Laporan/Laporan";
 
@@ -159,6 +162,44 @@ function getRouteFromPath(pathname) {
     };
   }
 
+  // Detail riwayat inventaris
+  // Edit riwayat inventaris
+  const inventoryHistoryEdit = path.match(
+    /^\/sarana-inventaris\/(\d+)\/(perawatan|perbaikan|stock-opname|mutasi)\/edit\/(\d+)$/,
+  );
+
+  if (inventoryHistoryEdit) {
+    return {
+      page: "inventaris",
+      detailInventoryId: Number(inventoryHistoryEdit[1]),
+      historyType: inventoryHistoryEdit[2],
+      historyAction: "edit",
+      historyEditId: Number(inventoryHistoryEdit[3]),
+    };
+  }
+
+  // Detail riwayat inventaris
+  const inventoryHistory = path.match(
+    /^\/sarana-inventaris\/(\d+)\/(perawatan|perbaikan|stock-opname|mutasi)$/,
+  );
+
+  if (inventoryHistory) {
+    return {
+      page: "inventaris",
+      detailInventoryId: Number(inventoryHistory[1]),
+      historyType: inventoryHistory[2],
+    };
+  }
+
+  if (inventoryHistory) {
+    return {
+      page: "inventaris",
+      detailInventoryId: Number(inventoryHistory[1]),
+      historyType: inventoryHistory[2],
+    };
+  }
+
+  // Detail inventaris
   const inventoryDetail = path.match(/^\/sarana-inventaris\/(\d+)$/);
 
   if (inventoryDetail) {
@@ -315,6 +356,9 @@ export default function App() {
     getRouteFromPath(window.location.pathname),
   );
 
+  const [user, setUser] = useState(null);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [stats, setStats] = useState(initialStats);
   const [loadingStats, setLoadingStats] = useState(true);
@@ -323,8 +367,92 @@ export default function App() {
   const page = route.page;
   const detailMasterId = route.detailMasterId ?? null;
   const detailInventoryId = route.detailInventoryId ?? null;
+  const isAdmin = user?.role === "admin";
 
   const currentPage = pageInfo[page] || pageInfo.dashboard;
+
+  useEffect(() => {
+    let active = true;
+
+    const checkAuth = async () => {
+      try {
+        const response = await api.get("/auth/me");
+
+        if (active) {
+          setUser(response.data.user);
+        }
+      } catch {
+        if (active) {
+          setUser(null);
+        }
+      } finally {
+        if (active) {
+          setCheckingAuth(false);
+        }
+      }
+    };
+
+    checkAuth();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (checkingAuth || !user || user.role === "admin") {
+      return;
+    }
+
+    let redirectPath = null;
+
+    if (route.page === "akun" || route.page === "backup") {
+      redirectPath = "/";
+    } else if (
+      route.page === "master" &&
+      ["create", "edit"].includes(route.masterForm)
+    ) {
+      redirectPath = "/master-sarana-inventaris";
+    } else if (
+      route.page === "lokasi" &&
+      ["create", "edit"].includes(route.locationForm)
+    ) {
+      redirectPath = "/lokasi";
+    } else if (
+      route.page === "penanggung-jawab" &&
+      ["create", "edit"].includes(route.responsibleForm)
+    ) {
+      redirectPath = "/penanggung-jawab";
+    }
+
+    if (redirectPath) {
+      window.history.replaceState({}, "", redirectPath);
+      setRoute(getRouteFromPath(redirectPath));
+      setSidebarOpen(false);
+    }
+  }, [checkingAuth, user, route]);
+
+  const handleLogin = useCallback((loggedInUser) => {
+    setUser(loggedInUser);
+
+    const path = "/";
+    window.history.pushState({}, "", path);
+    setRoute(getRouteFromPath(path));
+  }, []);
+
+  const handleLogout = useCallback(async () => {
+    try {
+      await api.post("/auth/logout");
+    } catch (error) {
+      console.error("Gagal logout:", error);
+    } finally {
+      setUser(null);
+
+      const path = "/login";
+      window.history.pushState({}, "", path);
+      setRoute(getRouteFromPath(path));
+    }
+  }, []);
 
   const fetchDashboard = useCallback(async () => {
     try {
@@ -351,8 +479,10 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    fetchDashboard();
-  }, [fetchDashboard]);
+    if (user) {
+      fetchDashboard();
+    }
+  }, [fetchDashboard, user]);
 
   useEffect(() => {
     const handlePopState = () => {
@@ -438,6 +568,48 @@ export default function App() {
     navigate("inventaris");
   }, [navigate]);
 
+  const openInventoryHistory = useCallback(
+    (type) => {
+      if (detailInventoryId == null) return;
+
+      const path = `/sarana-inventaris/${detailInventoryId}/${type}`;
+
+      window.history.pushState({}, "", path);
+      setRoute(getRouteFromPath(path));
+      setSidebarOpen(false);
+    },
+    [detailInventoryId],
+  );
+
+  const openEditHistory = useCallback(
+    (type, row) => {
+      if (detailInventoryId == null || !row?.id) return;
+
+      const path = `/sarana-inventaris/${detailInventoryId}/${type}/edit/${row.id}`;
+
+      window.history.pushState({}, "", path);
+      setRoute(getRouteFromPath(path));
+      setSidebarOpen(false);
+    },
+    [detailInventoryId],
+  );
+
+  const openAddHistory = useCallback(
+    (type) => {
+      if (detailInventoryId == null) return;
+
+      const path = `/sarana-inventaris/${detailInventoryId}/${type}?action=create`;
+
+      window.history.pushState({}, "", path);
+      setRoute({
+        ...getRouteFromPath(`/sarana-inventaris/${detailInventoryId}/${type}`),
+        historyAction: "create",
+      });
+      setSidebarOpen(false);
+    },
+    [detailInventoryId],
+  );
+
   // Navigasi lokasi
   const openLocationCreate = () => {
     const path = "/lokasi/create";
@@ -496,11 +668,37 @@ export default function App() {
     navigate("penanggung-jawab");
   }, [navigate]);
 
+  if (checkingAuth) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#64748b",
+        }}
+      >
+        Memeriksa sesi login...
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Login onLogin={handleLogin} />;
+  }
+
   return (
     <MainLayout>
       <div className="app-container">
         <Sidebar
-          menuItems={menuItems}
+          menuItems={
+            isAdmin
+              ? menuItems
+              : menuItems.filter(
+                  (item) => !["akun", "backup"].includes(item.id),
+                )
+          }
           activePage={page}
           onNavigate={navigate}
           isOpen={sidebarOpen}
@@ -513,6 +711,34 @@ export default function App() {
             subtitle={currentPage.subtitle}
             onMenuClick={() => setSidebarOpen((previous) => !previous)}
           />
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              alignItems: "center",
+              gap: "12px",
+              padding: "8px 24px 0",
+            }}
+          >
+            <span style={{ color: "#64748b", fontSize: "14px" }}>
+              {user.username}
+            </span>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              style={{
+                padding: "8px 14px",
+                border: "1px solid #d1d5db",
+                borderRadius: "6px",
+                background: "#fff",
+                cursor: "pointer",
+              }}
+            >
+              <i className="ti ti-logout" /> Logout
+            </button>
+          </div>
 
           <main className="page-container">
             {page === "dashboard" && (
@@ -546,8 +772,8 @@ export default function App() {
                 <MasterSarana
                   onChanged={fetchDashboard}
                   onDetail={openMasterDetail}
-                  onCreate={openMasterCreate}
-                  onEdit={openMasterEdit}
+                  onCreate={isAdmin ? openMasterCreate : undefined}
+                  onEdit={isAdmin ? openMasterEdit : undefined}
                 />
               ))}
 
@@ -556,6 +782,7 @@ export default function App() {
                 <TambahInventaris
                   onBack={goBackToInventory}
                   onSaved={fetchDashboard}
+                  currentUser={user}
                 />
               ) : route.inventoryForm === "edit" &&
                 route.editInventoryId != null ? (
@@ -570,11 +797,37 @@ export default function App() {
                   }}
                   onSaved={fetchDashboard}
                 />
+              ) : route.historyType ? (
+                <DetailRiwayat
+                  inventoryId={detailInventoryId}
+                  type={route.historyType}
+                  action={route.historyAction}
+                  editId={route.historyEditId}
+                  onBack={() => openInventoryDetail(detailInventoryId)}
+                  currentUser={user}
+                />
               ) : detailInventoryId !== null ? (
                 <DetailInventaris
                   id={detailInventoryId}
                   onBack={goBackToInventory}
                   onEdit={openInventoryEdit}
+                  currentUser={user}
+                  onAddMaintenance={() => openAddHistory("perawatan")}
+                  onViewMaintenances={() => openInventoryHistory("perawatan")}
+                  onAddRepair={() => openAddHistory("perbaikan")}
+                  onViewRepairs={() => openInventoryHistory("perbaikan")}
+                  onAddStockOpname={() => openAddHistory("stock-opname")}
+                  onViewStockOpnames={() =>
+                    openInventoryHistory("stock-opname")
+                  }
+                  onAddMutation={() => openAddHistory("mutasi")}
+                  onViewMutations={() => openInventoryHistory("mutasi")}
+                  onEditMaintenance={(row) => openEditHistory("perawatan", row)}
+                  onEditRepair={(row) => openEditHistory("perbaikan", row)}
+                  onEditStockOpname={(row) =>
+                    openEditHistory("stock-opname", row)
+                  }
+                  onEditMutation={(row) => openEditHistory("mutasi", row)}
                 />
               ) : (
                 <Inventaris
@@ -582,6 +835,8 @@ export default function App() {
                   onDetail={openInventoryDetail}
                   onCreate={openInventoryCreate}
                   onEdit={openInventoryEdit}
+                  isAdmin={user?.role === "admin"}
+                  currentResponsibleId={user?.responsible_id}
                 />
               ))}
 
@@ -614,9 +869,10 @@ export default function App() {
               ) : (
                 <Lokasi
                   onChanged={fetchDashboard}
-                  onTambah={openLocationCreate}
+                  onTambah={isAdmin ? openLocationCreate : undefined}
                   onDetail={openLocationDetail}
-                  onEdit={openLocationEdit}
+                  onEdit={isAdmin ? openLocationEdit : undefined}
+                  isAdmin={user?.role === "admin"}
                 />
               ))}
 
@@ -644,12 +900,13 @@ export default function App() {
                   id={route.detailResponsibleId}
                   onBack={goBackToResponsible}
                   onDetailInventaris={openInventoryDetail}
+                  currentUser={user}
                 />
               ) : (
                 <PenanggungJawab
-                  onTambah={openResponsibleCreate}
+                  onTambah={isAdmin ? openResponsibleCreate : undefined}
                   onDetail={openResponsibleDetail}
-                  onEdit={openResponsibleEdit}
+                  onEdit={isAdmin ? openResponsibleEdit : undefined}
                 />
               ))}
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import api from "../services/api";
+import api from "../../services/api";
 
 function formatTanggal(value) {
   if (!value) return "-";
@@ -163,12 +163,21 @@ export default function DetailInventaris({
   onViewMutations,
   onEditMutation,
   onDeleteMutation,
-  canManageHistory = false,
-  isAdmin = false,
+  currentUser,
 }) {
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const isAdmin = currentUser?.role === "admin";
+
+  const canManageHistory =
+    isAdmin ||
+    (currentUser?.responsible_id != null &&
+      item?.responsible_id != null &&
+      String(currentUser.responsible_id) === String(item.responsible_id));
+
+  const canEditInventory = canManageHistory;
 
   const fetchDetail = useCallback(async () => {
     setLoading(true);
@@ -298,7 +307,7 @@ export default function DetailInventaris({
             </button>
           )}
 
-          {item && onEdit && (
+          {item && onEdit && canEditInventory && (
             <button
               type="button"
               className="btn-outline-custom"

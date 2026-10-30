@@ -17,7 +17,14 @@ function formatTanggal(value) {
   });
 }
 
-export default function Inventaris({ onChanged, onDetail, onCreate, onEdit }) {
+export default function Inventaris({
+  onChanged,
+  onDetail,
+  onCreate,
+  onEdit,
+  isAdmin = false,
+  currentResponsibleId,
+}) {
   const [inventories, setInventories] = useState([]);
 
   const [searchInput, setSearchInput] = useState("");
@@ -103,6 +110,12 @@ export default function Inventaris({ onChanged, onDetail, onCreate, onEdit }) {
     filteredInventories.length === 0 ? 0 : (page - 1) * ITEMS_PER_PAGE + 1;
 
   const lastItem = Math.min(page * ITEMS_PER_PAGE, filteredInventories.length);
+
+  console.log("DEBUG INVENTARIS:", {
+    isAdmin,
+    currentResponsibleId,
+    contohInventaris: inventories[0],
+  });
 
   const handleSearch = (event) => {
     event.preventDefault();
@@ -258,35 +271,39 @@ export default function Inventaris({ onChanged, onDetail, onCreate, onEdit }) {
               <span>Print Semua QR</span>
             </button>
 
-            {!selectMode ? (
-              <button
-                type="button"
-                className="btn-outline-custom"
-                onClick={toggleSelectMode}
-              >
-                <i className="ti ti-checkbox" />
-                <span>Select</span>
-              </button>
-            ) : (
+            {isAdmin && (
               <>
-                <button
-                  type="button"
-                  className="btn-outline-custom"
-                  onClick={toggleSelectMode}
-                >
-                  <i className="ti ti-check" />
-                  <span>Selesai</span>
-                </button>
+                {!selectMode ? (
+                  <button
+                    type="button"
+                    className="btn-outline-custom"
+                    onClick={toggleSelectMode}
+                  >
+                    <i className="ti ti-checkbox" />
+                    <span>Select</span>
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      className="btn-outline-custom"
+                      onClick={toggleSelectMode}
+                    >
+                      <i className="ti ti-check" />
+                      <span>Selesai</span>
+                    </button>
 
-                <button
-                  type="button"
-                  className="btn-danger-custom"
-                  onClick={handleBulkDelete}
-                  disabled={selectedIds.length === 0 || loading}
-                >
-                  <i className="ti ti-trash" />
-                  <span>Hapus Terpilih ({selectedIds.length})</span>
-                </button>
+                    <button
+                      type="button"
+                      className="btn-danger-custom"
+                      onClick={handleBulkDelete}
+                      disabled={selectedIds.length === 0 || loading}
+                    >
+                      <i className="ti ti-trash" />
+                      <span>Hapus Terpilih ({selectedIds.length})</span>
+                    </button>
+                  </>
+                )}
               </>
             )}
 
@@ -423,25 +440,33 @@ export default function Inventaris({ onChanged, onDetail, onCreate, onEdit }) {
                                 <i className="ti ti-eye" />
                               </button>
 
-                              <button
-                                type="button"
-                                className="btn-icon-action edit"
-                                onClick={() => onEdit?.(item.id)}
-                                title="Edit"
-                                aria-label={`Edit ${item.nomor_inventaris}`}
-                              >
-                                <i className="ti ti-edit" />
-                              </button>
+                              {(isAdmin ||
+                                (currentResponsibleId != null &&
+                                  item.responsible_id != null &&
+                                  String(item.responsible_id) ===
+                                    String(currentResponsibleId))) && (
+                                <button
+                                  type="button"
+                                  className="btn-icon-action edit"
+                                  onClick={() => onEdit?.(item.id)}
+                                  title="Edit"
+                                  aria-label={`Edit ${item.nomor_inventaris}`}
+                                >
+                                  <i className="ti ti-edit" />
+                                </button>
+                              )}
 
-                              <button
-                                type="button"
-                                className="btn-icon-action delete"
-                                onClick={() => handleDelete(item)}
-                                title="Hapus"
-                                aria-label={`Hapus ${item.nomor_inventaris}`}
-                              >
-                                <i className="ti ti-trash" />
-                              </button>
+                              {isAdmin && (
+                                <button
+                                  type="button"
+                                  className="btn-icon-action delete"
+                                  onClick={() => handleDelete(item)}
+                                  title="Hapus"
+                                  aria-label={`Hapus ${item.nomor_inventaris}`}
+                                >
+                                  <i className="ti ti-trash" />
+                                </button>
+                              )}
                             </div>
                           </td>
                         )}

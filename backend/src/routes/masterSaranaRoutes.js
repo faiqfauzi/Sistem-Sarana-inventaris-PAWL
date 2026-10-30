@@ -3,6 +3,7 @@ const pool = require("../config/database");
 const fs = require("fs");
 const path = require("path");
 const multer = require("multer");
+const adminMiddleware = require("../middleware/adminMiddleware");
 
 const router = express.Router();
 
@@ -189,7 +190,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // POST: tambah sarana
-router.post("/", async (req, res) => {
+router.post("/", adminMiddleware, async (req, res) => {
   try {
     const nama = String(req.body.nama_sarana_inventaris || "").trim();
 
@@ -236,7 +237,7 @@ router.post("/", async (req, res) => {
 });
 
 // PUT: ubah sarana
-router.put("/:id", async (req, res) => {
+router.put("/:id", adminMiddleware, async (req, res) => {
   try {
     const id = Number(req.params.id);
     const nama = String(req.body.nama_sarana_inventaris || "").trim();
@@ -288,7 +289,7 @@ router.put("/:id", async (req, res) => {
 });
 
 // DELETE: hapus sarana
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", adminMiddleware, async (req, res) => {
   try {
     const id = Number(req.params.id);
 
@@ -326,7 +327,7 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-router.post("/header", (req, res) => {
+router.post("/header", adminMiddleware, (req, res) => {
   upload.single("header")(req, res, (uploadError) => {
     if (uploadError) {
       const message =

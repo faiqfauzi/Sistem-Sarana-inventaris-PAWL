@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import api from "../../services/api";
 
-export default function Lokasi({ onChanged, onTambah, onDetail, onEdit }) {
+export default function Lokasi({
+  onChanged,
+  onTambah,
+  onDetail,
+  onEdit,
+  isAdmin = false,
+}) {
   const [items, setItems] = useState([]);
   const [search, setSearch] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
@@ -101,14 +107,16 @@ export default function Lokasi({ onChanged, onTambah, onDetail, onEdit }) {
               <span>Print Semua QR</span>
             </button>
 
-            <button
-              type="button"
-              className="btn-primary-custom"
-              onClick={onTambah}
-            >
-              <i className="ti ti-plus" />
-              <span>Tambah</span>
-            </button>
+            {isAdmin && (
+              <button
+                type="button"
+                className="btn-primary-custom"
+                onClick={onTambah}
+              >
+                <i className="ti ti-plus" />
+                <span>Tambah</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -188,25 +196,29 @@ export default function Lokasi({ onChanged, onTambah, onDetail, onEdit }) {
                           <i className="ti ti-eye" />
                         </button>
 
-                        <button
-                          type="button"
-                          className="btn-icon-action edit"
-                          onClick={() => onEdit?.(item.id)}
-                          title="Edit lokasi"
-                          aria-label={`Edit lokasi ${item.nama_lokasi}`}
-                        >
-                          <i className="ti ti-edit" />
-                        </button>
+                        {isAdmin && (
+                          <>
+                            <button
+                              type="button"
+                              className="btn-icon-action edit"
+                              onClick={() => onEdit?.(item.id)}
+                              title="Edit lokasi"
+                              aria-label={`Edit lokasi ${item.nama_lokasi}`}
+                            >
+                              <i className="ti ti-edit" />
+                            </button>
 
-                        <button
-                          type="button"
-                          className="btn-icon-action delete"
-                          onClick={() => handleDelete(item)}
-                          title="Hapus lokasi"
-                          aria-label={`Hapus lokasi ${item.nama_lokasi}`}
-                        >
-                          <i className="ti ti-trash" />
-                        </button>
+                            <button
+                              type="button"
+                              className="btn-icon-action delete"
+                              onClick={() => handleDelete(item)}
+                              title="Hapus lokasi"
+                              aria-label={`Hapus lokasi ${item.nama_lokasi}`}
+                            >
+                              <i className="ti ti-trash" />
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>

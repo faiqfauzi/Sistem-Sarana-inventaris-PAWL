@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const authMiddleware = require("../middleware/authMiddleware");
 const db = require("../config/database");
 const ExcelJS = require("exceljs");
 
@@ -228,7 +229,7 @@ router.get("/", async (req, res) => {
 });
 
 // POST /api/reports/export/excel
-router.post("/export/excel", async (req, res) => {
+router.post("/export/excel", authMiddleware, async (req, res) => {
   try {
     const { inventory_ids, columns, filters } = req.body;
 
@@ -348,7 +349,7 @@ router.post("/export/excel", async (req, res) => {
 const PDFDocument = require("pdfkit");
 
 // POST /api/reports/export/pdf
-router.post("/export/pdf", async (req, res) => {
+router.post("/export/pdf", authMiddleware, async (req, res) => {
   try {
     const { inventory_ids, columns, filters } = req.body;
 

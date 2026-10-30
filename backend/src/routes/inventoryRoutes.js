@@ -3,6 +3,460 @@ const router = express.Router();
 const pool = require("../config/database");
 const QRCode = require("qrcode");
 const PDFDocument = require("pdfkit");
+const adminMiddleware = require("../middleware/adminMiddleware");
+const multer = require("multer");
+const fs = require("fs");
+const path = require("path");
+
+const uploadDir = path.join(__dirname, "../../uploads");
+
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+    cb(null, filename);
+  },
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = /\.(pdf|jpg|jpeg|png|doc|docx|xls|xlsx)$/i.test(
+      path.extname(file.originalname),
+    );
+
+    if (!allowed) {
+      return cb(new Error("Format file tidak didukung."));
+    }
+
+    cb(null, true);
+  },
+});
+
+const historyConfig = {
+  perawatan: {
+    table: "inventory_maintenances",
+    fileField: null,
+  },
+  perbaikan: {
+    table: "inventory_repairs",
+    fileField: "dokumen",
+  },
+  "stock-opname": {
+    table: "inventory_stock_opnames",
+    fileField: "foto",
+  },
+  mutasi: {
+    table: "inventory_mutations",
+    fileField: "dokumen",
+  },
+};
+
+async function checkInventoryAccess(req, res, inventoryId) {
+  const [rows] = await pool.execute(
+    "SELECT id, responsible_id FROM inventories WHERE id = ?",
+    [inventoryId],
+  );
+
+  if (!rows.length) {
+    res.status(404).json({
+      success: false,
+      message: "Inventaris tidak ditemukan.",
+    });
+    return false;
+  }
+
+  const user = req.user;
+  const inventory = rows[0];
+
+  if (
+    user.role !== "admin" &&
+    (user.responsible_id == null ||
+      String(user.responsible_id) !== String(inventory.responsible_id))
+  ) {
+    res.status(403).json({
+      success: false,
+      message: "Anda tidak memiliki akses ke riwayat inventaris ini.",
+    });
+    return false;
+  }
+
+  return inventory;
+}
+
+router.post("/:id/history/:type", async (req, res, next) => {
+  const config = historyConfig[req.params.type];
+
+  if (!config) {
+    return res.status(400).json({
+      success: false,
+      message: "Jenis riwayat tidak valid.",
+    });
+  }
+
+  if (config.fileField) {
+    return upload.single(config.fileField)(req, res, async (err) => {
+      if (err) {
+        return res.status(400).json({
+          success: false,
+          message: err.message || "Upload file gagal.",
+        });
+      }
+
+      return createHistory(req, res, config);
+    });
+  }
+
+  return createHistory(req, res, config);
+});
+
+async function createHistory(req, res, config) {
+  try {
+    const inventoryId = Number(req.params.id);
+    const inventory = await checkInventoryAccess(req, res, inventoryId);
+    if (!inventory) return;
+
+    const body = req.body;
+    let fields = [];
+
+    switch (req.params.type) {
+      case "perawatan":
+        fields = [
+          "tanggal_perawatan",
+          "tanggal_perawatan_selanjutnya",
+          "jenis_perawatan",
+          "pelaksana",
+        ];
+        if (
+          !body.tanggal_perawatan ||
+          !body.jenis_perawatan ||
+          !body.pelaksana
+        ) {
+          return res.status(400).json({
+            success: false,
+            message:
+              "Tanggal perawatan, jenis perawatan, dan pelaksana wajib diisi.",
+          });
+        }
+        break;
+
+      case "perbaikan":
+        fields = [
+          "tanggal_pengajuan",
+          "tanggal_tindak_lanjut",
+          "jenis_perbaikan",
+          "pelaksana",
+        ];
+        if (
+          !body.tanggal_pengajuan ||
+          !body.jenis_perbaikan ||
+          !body.pelaksana
+        ) {
+          return res.status(400).json({
+            success: false,
+            message:
+              "Tanggal pengajuan, jenis perbaikan, dan pelaksana wajib diisi.",
+          });
+        }
+        break;
+
+      case "stock-opname":
+        fields = ["tanggal", "kondisi", "auditor"];
+        if (!body.tanggal || !body.kondisi || !body.auditor) {
+          return res.status(400).json({
+            success: false,
+            message: "Tanggal, kondisi, dan auditor wajib diisi.",
+          });
+        }
+        break;
+
+      case "mutasi":
+        fields = ["jenis", "tanggal", "alasan"];
+        if (
+          !["Pemindahan", "Pemusnahan"].includes(body.jenis) ||
+          !body.tanggal ||
+          !body.alasan
+        ) {
+          return res.status(400).json({
+            success: false,
+            message: "Jenis, tanggal, dan alasan wajib diisi dengan benar.",
+          });
+        }
+        break;
+    }
+
+    const values = fields.map((field) => body[field] || null);
+
+    if (config.fileField && req.file) {
+      fields.push(config.fileField);
+      values.push(
+        `/${path.relative(path.join(__dirname, "../.."), req.file.path).replace(/\\/g, "/")}`,
+      );
+    }
+
+    fields.unshift("inventory_id");
+    values.unshift(inventoryId);
+
+    const columns = fields.map((field) => `\`${field}\``).join(", ");
+    const placeholders = fields.map(() => "?").join(", ");
+
+    const [result] = await pool.execute(
+      `INSERT INTO ${config.table} (${columns}) VALUES (${placeholders})`,
+      values,
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: "Riwayat berhasil ditambahkan.",
+      id: result.insertId,
+    });
+  } catch (error) {
+    console.error("Gagal menambah riwayat:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Gagal menambah riwayat.",
+    });
+  }
+}
+
+/* PUT: mengedit riwayat inventaris */
+router.put("/:id/history/:type/:historyId", async (req, res) => {
+  const config = historyConfig[req.params.type];
+
+  if (!config) {
+    return res.status(400).json({
+      success: false,
+      message: "Jenis riwayat tidak valid.",
+    });
+  }
+
+  const handleUpdate = async () => {
+    try {
+      const inventoryId = Number(req.params.id);
+      const historyId = Number(req.params.historyId);
+
+      if (
+        !Number.isInteger(inventoryId) ||
+        inventoryId < 1 ||
+        !Number.isInteger(historyId) ||
+        historyId < 1
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "ID inventaris atau riwayat tidak valid.",
+        });
+      }
+
+      const inventory = await checkInventoryAccess(req, res, inventoryId);
+
+      if (!inventory) return;
+
+      const [historyRows] = await pool.execute(
+        `SELECT id FROM ${config.table}
+         WHERE id = ? AND inventory_id = ?`,
+        [historyId, inventoryId],
+      );
+
+      if (!historyRows.length) {
+        return res.status(404).json({
+          success: false,
+          message: "Riwayat inventaris tidak ditemukan.",
+        });
+      }
+
+      const body = req.body;
+      let fields = [];
+
+      switch (req.params.type) {
+        case "perawatan":
+          fields = [
+            "tanggal_perawatan",
+            "tanggal_perawatan_selanjutnya",
+            "jenis_perawatan",
+            "pelaksana",
+          ];
+
+          if (
+            !body.tanggal_perawatan ||
+            !body.jenis_perawatan ||
+            !body.pelaksana
+          ) {
+            return res.status(400).json({
+              success: false,
+              message:
+                "Tanggal perawatan, jenis perawatan, dan pelaksana wajib diisi.",
+            });
+          }
+          break;
+
+        case "perbaikan":
+          fields = [
+            "tanggal_pengajuan",
+            "tanggal_tindak_lanjut",
+            "jenis_perbaikan",
+            "pelaksana",
+          ];
+
+          if (
+            !body.tanggal_pengajuan ||
+            !body.jenis_perbaikan ||
+            !body.pelaksana
+          ) {
+            return res.status(400).json({
+              success: false,
+              message:
+                "Tanggal pengajuan, jenis perbaikan, dan pelaksana wajib diisi.",
+            });
+          }
+          break;
+
+        case "stock-opname":
+          fields = ["tanggal", "kondisi", "auditor"];
+
+          if (!body.tanggal || !body.kondisi || !body.auditor) {
+            return res.status(400).json({
+              success: false,
+              message: "Tanggal, kondisi, dan auditor wajib diisi.",
+            });
+          }
+          break;
+
+        case "mutasi":
+          fields = ["jenis", "tanggal", "alasan"];
+
+          if (
+            !["Pemindahan", "Pemusnahan"].includes(body.jenis) ||
+            !body.tanggal ||
+            !body.alasan
+          ) {
+            return res.status(400).json({
+              success: false,
+              message: "Jenis, tanggal, dan alasan wajib diisi dengan benar.",
+            });
+          }
+          break;
+      }
+
+      const values = fields.map((field) => body[field] || null);
+
+      if (config.fileField && req.file) {
+        fields.push(config.fileField);
+        values.push(
+          `/${path
+            .relative(path.join(__dirname, "../.."), req.file.path)
+            .replace(/\\/g, "/")}`,
+        );
+      }
+
+      const setClause = fields.map((field) => `\`${field}\` = ?`).join(", ");
+
+      values.push(historyId, inventoryId);
+
+      await pool.execute(
+        `UPDATE ${config.table}
+         SET ${setClause}
+         WHERE id = ? AND inventory_id = ?`,
+        values,
+      );
+
+      return res.json({
+        success: true,
+        message: "Riwayat berhasil diperbarui.",
+      });
+    } catch (error) {
+      console.error("Gagal mengedit riwayat:", error);
+
+      return res.status(500).json({
+        success: false,
+        message: "Gagal mengedit riwayat.",
+      });
+    }
+  };
+
+  if (config.fileField) {
+    return upload.single(config.fileField)(req, res, (err) => {
+      if (err) {
+        return res.status(400).json({
+          success: false,
+          message: err.message || "Upload file gagal.",
+        });
+      }
+
+      return handleUpdate();
+    });
+  }
+
+  return handleUpdate();
+});
+
+/* DELETE: menghapus riwayat, khusus admin */
+router.delete(
+  "/:id/history/:type/:historyId",
+  adminMiddleware,
+  async (req, res) => {
+    try {
+      const inventoryId = Number(req.params.id);
+      const historyId = Number(req.params.historyId);
+      const config = historyConfig[req.params.type];
+
+      if (!config) {
+        return res.status(400).json({
+          success: false,
+          message: "Jenis riwayat tidak valid.",
+        });
+      }
+
+      if (
+        !Number.isInteger(inventoryId) ||
+        inventoryId < 1 ||
+        !Number.isInteger(historyId) ||
+        historyId < 1
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "ID inventaris atau riwayat tidak valid.",
+        });
+      }
+
+      const [rows] = await pool.execute(
+        `SELECT id FROM ${config.table}
+         WHERE id = ? AND inventory_id = ?`,
+        [historyId, inventoryId],
+      );
+
+      if (!rows.length) {
+        return res.status(404).json({
+          success: false,
+          message: "Riwayat inventaris tidak ditemukan.",
+        });
+      }
+
+      await pool.execute(
+        `DELETE FROM ${config.table}
+         WHERE id = ? AND inventory_id = ?`,
+        [historyId, inventoryId],
+      );
+
+      return res.json({
+        success: true,
+        message: "Riwayat berhasil dihapus.",
+      });
+    } catch (error) {
+      console.error("Gagal menghapus riwayat:", error);
+
+      return res.status(500).json({
+        success: false,
+        message: "Gagal menghapus riwayat.",
+      });
+    }
+  },
+);
 
 /* GET: mengambil pilihan sarana, lokasi, dan penanggung jawab */
 router.get("/options", async (req, res) => {
@@ -93,8 +547,13 @@ router.get("/", async (req, res) => {
 });
 
 // POST: menambahkan inventaris baru
+
+/* POST: menambahkan inventaris baru */
 router.post("/", async (req, res) => {
   try {
+    const currentUser = req.user;
+    const isAdmin = currentUser.role === "admin";
+
     const {
       nomor_inventaris,
       user,
@@ -110,7 +569,20 @@ router.post("/", async (req, res) => {
     if (!nomor_inventaris || !nomor_inventaris.trim()) {
       return res.status(400).json({
         success: false,
-        message: "Nomor inventaris wajib diisi",
+        message: "Nomor inventaris wajib diisi.",
+      });
+    }
+
+    // Admin boleh memilih penanggung jawab.
+    // Pengguna lain otomatis menggunakan penanggung jawab akunnya.
+    const finalResponsibleId = isAdmin
+      ? responsible_id || null
+      : currentUser.responsible_id;
+
+    if (!finalResponsibleId) {
+      return res.status(400).json({
+        success: false,
+        message: "Penanggung jawab belum ditentukan pada akun ini.",
       });
     }
 
@@ -135,18 +607,18 @@ router.post("/", async (req, res) => {
         spesifikasi || null,
         master_sarana_inventaris_id || null,
         location_id || null,
-        responsible_id || null,
+        finalResponsibleId,
       ],
     );
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
-      message: "Inventaris berhasil ditambahkan",
+      message: "Inventaris berhasil ditambahkan.",
       id: result.insertId,
     });
   } catch (error) {
     console.error("Gagal menambah inventaris:", error.message);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Gagal menambah inventaris. Periksa kolom dan relasi database.",
     });
@@ -154,6 +626,106 @@ router.post("/", async (req, res) => {
 });
 
 /* GET: detail satu inventaris beserta 4 riwayat terbaru */
+
+/* GET: mengambil seluruh riwayat berdasarkan inventaris dan jenisnya */
+router.get("/:id/history/:type", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const { type } = req.params;
+
+    if (!Number.isInteger(id) || id < 1) {
+      return res.status(400).json({
+        success: false,
+        message: "ID inventaris tidak valid.",
+      });
+    }
+
+    // Nama tabel dan kolom pengurutan hanya boleh berasal dari daftar ini.
+    const historyConfig = {
+      perawatan: {
+        table: "inventory_maintenances",
+        order: "tanggal_perawatan",
+      },
+      perbaikan: {
+        table: "inventory_repairs",
+        order: "tanggal_pengajuan",
+      },
+      "stock-opname": {
+        table: "inventory_stock_opnames",
+        order: "tanggal",
+      },
+      mutasi: {
+        table: "inventory_mutations",
+        order: "tanggal",
+      },
+    };
+
+    const config = historyConfig[type];
+
+    if (!config) {
+      return res.status(400).json({
+        success: false,
+        message: "Jenis riwayat tidak valid.",
+      });
+    }
+
+    const [inventories] = await pool.execute(
+      `SELECT
+        i.id,
+        i.nomor_inventaris,
+        i.user,
+        i.status,
+        i.foto,
+        i.tanggal_perolehan,
+        i.spesifikasi,
+        i.responsible_id,
+        i.master_sarana_inventaris_id,
+        i.location_id,
+        m.nama_sarana_inventaris,
+        l.nama_lokasi,
+        r.nama_penanggung_jawab
+          FROM inventories AS i
+          LEFT JOIN master_sarana_inventaris AS m
+            ON m.id = i.master_sarana_inventaris_id
+          LEFT JOIN locations AS l
+            ON l.id = i.location_id
+          LEFT JOIN responsibles AS r
+            ON r.id = i.responsible_id
+          WHERE i.id = ?`,
+      [id],
+    );
+
+    if (inventories.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Inventaris tidak ditemukan.",
+      });
+    }
+
+    const [rows] = await pool.query(
+      `SELECT *
+       FROM ${config.table}
+       WHERE inventory_id = ?
+       ORDER BY ${config.order} DESC, id DESC`,
+      [id],
+    );
+
+    return res.json({
+      success: true,
+      data: {
+        inventory: inventories[0],
+        rows,
+      },
+    });
+  } catch (error) {
+    console.error("Gagal mengambil seluruh riwayat:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Gagal mengambil seluruh riwayat inventaris.",
+    });
+  }
+});
 
 /* GET: detail satu inventaris beserta riwayat Laravel */
 router.get("/:id", async (req, res) => {
@@ -262,9 +834,13 @@ router.get("/:id", async (req, res) => {
 });
 
 // PUT: memperbarui inventaris berdasarkan ID
+
+/* PUT: memperbarui inventaris berdasarkan ID */
 router.put("/:id", async (req, res) => {
   try {
     const { id } = req.params;
+    const currentUser = req.user;
+
     const {
       nomor_inventaris,
       user,
@@ -277,12 +853,47 @@ router.put("/:id", async (req, res) => {
       responsible_id,
     } = req.body;
 
+    // Pastikan inventaris memang ada.
+    const [inventories] = await pool.execute(
+      "SELECT id, responsible_id FROM inventories WHERE id = ?",
+      [id],
+    );
+
+    if (inventories.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Inventaris tidak ditemukan.",
+      });
+    }
+
+    const inventory = inventories[0];
+    const isAdmin = currentUser.role === "admin";
+
+    // Non-admin hanya boleh mengedit inventaris miliknya sendiri.
+    if (
+      !isAdmin &&
+      (currentUser.responsible_id == null ||
+        inventory.responsible_id == null ||
+        String(inventory.responsible_id) !== String(currentUser.responsible_id))
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Anda tidak memiliki akses untuk mengubah inventaris ini.",
+      });
+    }
+
     if (!nomor_inventaris || !nomor_inventaris.trim()) {
       return res.status(400).json({
         success: false,
-        message: "Nomor inventaris wajib diisi",
+        message: "Nomor inventaris wajib diisi.",
       });
     }
+
+    // Admin boleh menentukan penanggung jawab.
+    // Non-admin harus tetap menggunakan penanggung jawab miliknya.
+    const finalResponsibleId = isAdmin
+      ? responsible_id || null
+      : currentUser.responsible_id;
 
     const [result] = await pool.execute(
       `UPDATE inventories SET
@@ -305,7 +916,7 @@ router.put("/:id", async (req, res) => {
         spesifikasi || null,
         master_sarana_inventaris_id || null,
         location_id || null,
-        responsible_id || null,
+        finalResponsibleId,
         id,
       ],
     );
@@ -313,25 +924,25 @@ router.put("/:id", async (req, res) => {
     if (result.affectedRows === 0) {
       return res.status(404).json({
         success: false,
-        message: "Inventaris tidak ditemukan",
+        message: "Inventaris tidak ditemukan.",
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
-      message: "Inventaris berhasil diperbarui",
+      message: "Inventaris berhasil diperbarui.",
     });
   } catch (error) {
     console.error("Gagal mengedit inventaris:", error.message);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: "Gagal mengedit inventaris. Periksa kolom dan relasi database.",
+      message: "Gagal mengedit inventaris.",
     });
   }
 });
 
 /* DELETE: menghapus beberapa inventaris sekaligus */
-router.delete("/bulk", async (req, res) => {
+router.delete("/bulk", adminMiddleware, async (req, res) => {
   try {
     const { ids } = req.body;
 
@@ -389,7 +1000,7 @@ router.delete("/bulk", async (req, res) => {
 });
 
 // DELETE: menghapus inventaris berdasarkan ID
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", adminMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
 

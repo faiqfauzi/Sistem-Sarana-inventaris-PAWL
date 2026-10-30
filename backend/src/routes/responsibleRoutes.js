@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../config/database");
+const adminMiddleware = require("../middleware/adminMiddleware");
 
 const PAGE_SIZE = 10;
 
@@ -286,7 +287,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // POST /api/responsibles - Tambah penanggung jawab
-router.post("/", async (req, res) => {
+router.post("/", adminMiddleware, async (req, res) => {
   try {
     const nama = String(req.body.nama_penanggung_jawab || "").trim();
 
@@ -355,7 +356,7 @@ router.post("/", async (req, res) => {
 });
 
 // PUT /api/responsibles/:id - Edit penanggung jawab
-router.put("/:id", async (req, res) => {
+router.put("/:id", adminMiddleware, async (req, res) => {
   try {
     const id = Number(req.params.id);
     const nama = String(req.body.nama_penanggung_jawab || "").trim();
@@ -447,7 +448,7 @@ router.put("/:id", async (req, res) => {
 });
 
 // DELETE /api/responsibles/:id - Hapus penanggung jawab
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", adminMiddleware, async (req, res) => {
   try {
     const id = Number(req.params.id);
 

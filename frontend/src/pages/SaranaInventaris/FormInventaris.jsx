@@ -7,7 +7,13 @@ export default function FormInventaris({
   onChange,
   onSubmit,
   onBack,
+  isAdmin = false,
+  currentResponsibleId,
 }) {
+  const currentResponsible = options.penanggungJawab.find(
+    (item) => String(item.id) === String(currentResponsibleId),
+  );
+
   return (
     <div className="master-page">
       <section className="content-card">
@@ -62,18 +68,27 @@ export default function FormInventaris({
 
             <label>
               Penanggung Jawab
-              <select
-                name="responsible_id"
-                value={form.responsible_id}
-                onChange={onChange}
-              >
-                <option value="">Pilih penanggung jawab</option>
-                {options.penanggungJawab.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.nama_penanggung_jawab}
-                  </option>
-                ))}
-              </select>
+              {isAdmin ? (
+                <select
+                  name="responsible_id"
+                  value={form.responsible_id}
+                  onChange={onChange}
+                >
+                  <option value="">Pilih penanggung jawab</option>
+                  {options.penanggungJawab.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.nama_penanggung_jawab}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  value={currentResponsible?.nama_penanggung_jawab || ""}
+                  placeholder="Penanggung jawab akun login"
+                  readOnly
+                  required
+                />
+              )}
             </label>
 
             <label>

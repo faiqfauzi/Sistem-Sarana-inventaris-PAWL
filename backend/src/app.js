@@ -13,6 +13,8 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 const locationRoutes = require("./routes/locationRoutes");
 const responsibleRoutes = require("./routes/responsibleRoutes");
 const reportRoutes = require("./routes/reportRoutes");
+const userRoutes = require("./routes/userRoutes");
+const backupRoutes = require("./routes/backupRoutes");
 
 const app = express();
 
@@ -44,10 +46,13 @@ app.use("/api/reports/export", authMiddleware);
 // Lindungi API aplikasi setelah endpoint autentikasi didaftarkan
 app.use("/api", authMiddleware);
 app.use("/api", apiRoutes);
+app.use("/api/backup-restore", backupRoutes);
 app.use("/api/inventories", inventoryRoutes);
 app.use("/api/master-sarana", masterSaranaRoutes);
 app.use("/api/locations", locationRoutes);
 app.use("/api/responsibles", responsibleRoutes);
+
+app.use("/api/users", userRoutes);
 
 
 app.get("/api/db-health", async (req, res) => {
@@ -65,34 +70,6 @@ app.get("/api/db-health", async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Koneksi database gagal",
-    });
-  }
-});
-
-app.get("/api/dashboard", async (req, res) => {
-  try {
-    const [[masterRows], [inventoryRows], [locationRows], [responsibleRows]] =
-      await Promise.all([
-        pool.query("SELECT COUNT(*) AS total FROM master_sarana_inventaris"),
-        pool.query("SELECT COUNT(*) AS total FROM inventories"),
-        pool.query("SELECT COUNT(*) AS total FROM locations"),
-        pool.query("SELECT COUNT(*) AS total FROM responsibles"),
-      ]);
-
-    res.json({
-      success: true,
-      stats: {
-        masterSaranaInventaris: masterRows[0].total,
-        totalInventaris: inventoryRows[0].total,
-        lokasi: locationRows[0].total,
-        penanggungJawab: responsibleRows[0].total,
-      },
-    });
-  } catch (error) {
-    console.error("Dashboard error:", error.message);
-    res.status(500).json({
-      success: false,
-      message: "Gagal mengambil statistik dashboard",
     });
   }
 });

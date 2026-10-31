@@ -5,7 +5,7 @@ import FormInventaris from "./FormInventaris";
 const emptyForm = {
   nomor_inventaris: "",
   user: "",
-  status: "Baik",
+  status: "",
   tanggal_perolehan: "",
   spesifikasi: "",
   master_sarana_inventaris_id: "",

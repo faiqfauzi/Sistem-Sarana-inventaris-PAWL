@@ -44,7 +44,12 @@ function Pagination({ pagination, onPageChange }) {
   );
 }
 
-export default function PenanggungJawab({ onTambah, onDetail, onEdit }) {
+export default function PenanggungJawab({
+  onTambah,
+  onDetail,
+  onEdit,
+  isAdmin,
+}) {
   const [items, setItems] = useState([]);
   const [pagination, setPagination] = useState({
     current_page: 1,
@@ -162,14 +167,15 @@ export default function PenanggungJawab({ onTambah, onDetail, onEdit }) {
               tanggung jawabnya.
             </p>
           </div>
-
-          <button
-            type="button"
-            className="btn-primary-custom"
-            onClick={() => onTambah?.()}
-          >
-            <i className="ti ti-plus" /> Tambah
-          </button>
+          {isAdmin && (
+            <button
+              type="button"
+              className="btn-primary-custom"
+              onClick={() => onTambah?.()}
+            >
+              <i className="ti ti-plus" /> Tambah
+            </button>
+          )}
         </div>
 
         <form className="search-form" onSubmit={handleSearch}>
@@ -246,26 +252,29 @@ export default function PenanggungJawab({ onTambah, onDetail, onEdit }) {
                         >
                           <i className="ti ti-eye" />
                         </button>
+                        {isAdmin && (
+                          <>
+                            <button
+                              type="button"
+                              className="btn-icon-action edit"
+                              onClick={() => onEdit?.(item.id)}
+                              title="Edit"
+                              aria-label={`Edit ${item.nama_penanggung_jawab}`}
+                            >
+                              <i className="ti ti-edit" />
+                            </button>
 
-                        <button
-                          type="button"
-                          className="btn-icon-action edit"
-                          onClick={() => onEdit?.(item.id)}
-                          title="Edit"
-                          aria-label={`Edit ${item.nama_penanggung_jawab}`}
-                        >
-                          <i className="ti ti-edit" />
-                        </button>
-
-                        <button
-                          type="button"
-                          className="btn-icon-action delete"
-                          onClick={() => handleDelete(item)}
-                          title="Hapus"
-                          aria-label={`Hapus ${item.nama_penanggung_jawab}`}
-                        >
-                          <i className="ti ti-trash" />
-                        </button>
+                            <button
+                              type="button"
+                              className="btn-icon-action delete"
+                              onClick={() => handleDelete(item)}
+                              title="Hapus"
+                              aria-label={`Hapus ${item.nama_penanggung_jawab}`}
+                            >
+                              <i className="ti ti-trash" />
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>

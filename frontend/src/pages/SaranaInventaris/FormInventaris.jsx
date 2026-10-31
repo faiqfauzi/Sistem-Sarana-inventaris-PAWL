@@ -8,6 +8,7 @@ export default function FormInventaris({
   onSubmit,
   onBack,
   isAdmin = false,
+  isEdit = false,
   currentResponsibleId,
 }) {
   const currentResponsible = options.penanggungJawab.find(
@@ -103,20 +104,11 @@ export default function FormInventaris({
 
             <label>
               Status
-              <select name="status" value={form.status} onChange={onChange}>
-                {![
-                  "Baik",
-                  "Rusak Ringan",
-                  "Rusak Berat",
-                  "Dalam Perbaikan",
-                ].includes(form.status) && (
-                  <option value={form.status}>{form.status}</option>
-                )}
-                <option value="Baik">Baik</option>
-                <option value="Rusak Ringan">Rusak Ringan</option>
-                <option value="Rusak Berat">Rusak Berat</option>
-                <option value="Dalam Perbaikan">Dalam Perbaikan</option>
-              </select>
+              <input
+                name="status"
+                value={form.status ?? ""}
+                onChange={onChange}
+              />
             </label>
 
             <label>

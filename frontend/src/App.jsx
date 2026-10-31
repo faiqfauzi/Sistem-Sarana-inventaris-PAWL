@@ -31,7 +31,12 @@ import EditInventaris from "./pages/SaranaInventaris/EditInventaris";
 import DetailInventaris from "./pages/SaranaInventaris/DetailInventaris";
 import DetailRiwayat from "./pages/SaranaInventaris/DetailRiwayat";
 
+import ManajemenAkun from "./pages/ManajemenAkun/ManajemenAkun";
+import TambahAkun from "./pages/ManajemenAkun/TambahAkun";
+import EditAkun from "./pages/ManajemenAkun/EditAkun";
+
 import Laporan from "./pages/Laporan/Laporan";
+import BackupRestore from "./pages/Backup/BackupRestore";
 
 const initialStats = {
   masterSaranaInventaris: 0,
@@ -137,10 +142,29 @@ function getRouteFromPath(pathname) {
     return { page: "dashboard" };
   }
 
-  // =========================
-  // SARANA INVENTARIS
-  // =========================
+  // Manajemen Akun
+  if (path === "/akun") {
+    return { page: "akun" };
+  }
 
+  if (path === "/akun/create") {
+    return {
+      page: "akun",
+      accountForm: "create",
+    };
+  }
+
+  const accountEditMatch = path.match(/^\/akun\/(\d+)\/edit$/);
+
+  if (accountEditMatch) {
+    return {
+      page: "akun",
+      accountForm: "edit",
+      editAccountId: Number(accountEditMatch[1]),
+    };
+  }
+
+  // Sarana Inventaris
   if (path === "/sarana-inventaris") {
     return { page: "inventaris" };
   }
@@ -162,8 +186,6 @@ function getRouteFromPath(pathname) {
     };
   }
 
-  // Detail riwayat inventaris
-  // Edit riwayat inventaris
   const inventoryHistoryEdit = path.match(
     /^\/sarana-inventaris\/(\d+)\/(perawatan|perbaikan|stock-opname|mutasi)\/edit\/(\d+)$/,
   );
@@ -178,7 +200,6 @@ function getRouteFromPath(pathname) {
     };
   }
 
-  // Detail riwayat inventaris
   const inventoryHistory = path.match(
     /^\/sarana-inventaris\/(\d+)\/(perawatan|perbaikan|stock-opname|mutasi)$/,
   );
@@ -191,15 +212,6 @@ function getRouteFromPath(pathname) {
     };
   }
 
-  if (inventoryHistory) {
-    return {
-      page: "inventaris",
-      detailInventoryId: Number(inventoryHistory[1]),
-      historyType: inventoryHistory[2],
-    };
-  }
-
-  // Detail inventaris
   const inventoryDetail = path.match(/^\/sarana-inventaris\/(\d+)$/);
 
   if (inventoryDetail) {
@@ -209,10 +221,7 @@ function getRouteFromPath(pathname) {
     };
   }
 
-  // =========================
-  // MASTER SARANA
-  // =========================
-
+  // Master Sarana Inventaris
   if (path === "/master-sarana-inventaris") {
     return { page: "master" };
   }
@@ -243,11 +252,7 @@ function getRouteFromPath(pathname) {
     };
   }
 
-  // =========================
-  // LOKASI
-  // =========================
-
-  // Daftar lokasi
+  // Lokasi
   if (path === "/lokasi") {
     return {
       page: "lokasi",
@@ -256,7 +261,6 @@ function getRouteFromPath(pathname) {
     };
   }
 
-  // Tambah lokasi
   if (path === "/lokasi/create") {
     return {
       page: "lokasi",
@@ -265,7 +269,6 @@ function getRouteFromPath(pathname) {
     };
   }
 
-  // Edit lokasi
   const locationEdit = path.match(/^\/lokasi\/(\d+)\/edit$/);
 
   if (locationEdit) {
@@ -276,7 +279,6 @@ function getRouteFromPath(pathname) {
     };
   }
 
-  // Detail lokasi
   const locationDetail = path.match(/^\/lokasi\/(\d+)$/);
 
   if (locationDetail) {
@@ -287,10 +289,7 @@ function getRouteFromPath(pathname) {
     };
   }
 
-  // =========================
-  // PENANGGUNG JAWAB
-  // =========================
-
+  // Penanggung Jawab
   if (path === "/penanggung-jawab") {
     return { page: "penanggung-jawab" };
   }
@@ -321,17 +320,9 @@ function getRouteFromPath(pathname) {
     };
   }
 
-  if (path === "/laporan") {
-    return { page: "laporan" };
-  }
-
-  // =========================
-  // HALAMAN LAIN
-  // =========================
-
+  // Halaman lainnya
   const routes = {
     "/laporan": "laporan",
-    "/akun": "akun",
     "/backup-restore": "backup",
   };
 
@@ -668,6 +659,28 @@ export default function App() {
     navigate("penanggung-jawab");
   }, [navigate]);
 
+  // Navigasi Manajemen Akun
+  const openAccountCreate = useCallback(() => {
+    const path = "/akun/create";
+    window.history.pushState({}, "", path);
+    setRoute(getRouteFromPath(path));
+    setSidebarOpen(false);
+  }, []);
+
+  const openAccountEdit = useCallback((id) => {
+    const path = `/akun/${id}/edit`;
+    window.history.pushState({}, "", path);
+    setRoute(getRouteFromPath(path));
+    setSidebarOpen(false);
+  }, []);
+
+  const goBackToAccount = useCallback(() => {
+    const path = "/akun";
+    window.history.pushState({}, "", path);
+    setRoute(getRouteFromPath(path));
+    setSidebarOpen(false);
+  }, []);
+
   if (checkingAuth) {
     return (
       <div
@@ -774,6 +787,7 @@ export default function App() {
                   onDetail={openMasterDetail}
                   onCreate={isAdmin ? openMasterCreate : undefined}
                   onEdit={isAdmin ? openMasterEdit : undefined}
+                  isAdmin={isAdmin}
                 />
               ))}
 
@@ -796,6 +810,7 @@ export default function App() {
                     setSidebarOpen(false);
                   }}
                   onSaved={fetchDashboard}
+                  currentUser={user}
                 />
               ) : route.historyType ? (
                 <DetailRiwayat
@@ -907,14 +922,33 @@ export default function App() {
                   onTambah={isAdmin ? openResponsibleCreate : undefined}
                   onDetail={openResponsibleDetail}
                   onEdit={isAdmin ? openResponsibleEdit : undefined}
+                  isAdmin={isAdmin}
                 />
               ))}
 
             {page === "laporan" && <Laporan />}
 
-            {page === "akun" && <PlaceholderPage title="Manajemen Akun" />}
+            {page === "akun" &&
+              (route.accountForm === "create" ? (
+                <TambahAkun
+                  onBack={goBackToAccount}
+                  onSaved={() => navigate("akun")}
+                />
+              ) : route.accountForm === "edit" &&
+                route.editAccountId != null ? (
+                <EditAkun
+                  id={route.editAccountId}
+                  onBack={goBackToAccount}
+                  onSaved={() => navigate("akun")}
+                />
+              ) : (
+                <ManajemenAkun
+                  onTambah={openAccountCreate}
+                  onEdit={openAccountEdit}
+                />
+              ))}
 
-            {page === "backup" && <PlaceholderPage title="Backup & Restore" />}
+            {page === "backup" && isAdmin && <BackupRestore />}
           </main>
         </div>
       </div>

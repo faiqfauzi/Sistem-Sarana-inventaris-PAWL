@@ -8,6 +8,7 @@ export default function MasterSarana({
   onDetail,
   onCreate,
   onEdit,
+  isAdmin,
 }) {
   const [items, setItems] = useState([]);
   const [searchInput, setSearchInput] = useState("");
@@ -209,28 +210,32 @@ export default function MasterSarana({
         </div>
         <div className="master-page-heading master-page-heading-actions-only">
           <div className="master-heading-actions">
-            <button
-              type="button"
-              className="btn-warning-custom"
-              onClick={() => {
-                setError("");
-                setSelectedImage(null);
-                setImagePreview("");
-                setShowImageForm(true);
-              }}
-            >
-              <i className="ti ti-photo-edit" />
-              Edit Gambar
-            </button>
+            {isAdmin && (
+              <button
+                type="button"
+                className="btn-warning-custom"
+                onClick={() => {
+                  setError("");
+                  setSelectedImage(null);
+                  setImagePreview("");
+                  setShowImageForm(true);
+                }}
+              >
+                <i className="ti ti-photo-edit" />
+                Edit Gambar
+              </button>
+            )}
 
-            <button
-              type="button"
-              className="btn-primary-custom"
-              onClick={() => onCreate?.()}
-            >
-              <i className="ti ti-plus" />
-              Tambah
-            </button>
+            {isAdmin && (
+              <button
+                type="button"
+                className="btn-primary-custom"
+                onClick={() => onCreate?.()}
+              >
+                <i className="ti ti-plus" />
+                Tambah
+              </button>
+            )}
           </div>
         </div>
 
@@ -340,25 +345,29 @@ export default function MasterSarana({
                               <i className="ti ti-eye" />
                             </button>
 
-                            <button
-                              type="button"
-                              className="btn-icon-action edit"
-                              onClick={() => onEdit?.(item.id)}
-                              title="Edit"
-                              aria-label={`Edit ${item.nama_sarana_inventaris}`}
-                            >
-                              <i className="ti ti-edit" />
-                            </button>
+                            {isAdmin && (
+                              <>
+                                <button
+                                  type="button"
+                                  className="btn-icon-action edit"
+                                  onClick={() => onEdit?.(item.id)}
+                                  title="Edit"
+                                  aria-label={`Edit ${item.nama_sarana_inventaris}`}
+                                >
+                                  <i className="ti ti-edit" />
+                                </button>
 
-                            <button
-                              type="button"
-                              className="btn-icon-action delete"
-                              onClick={() => handleDelete(item)}
-                              title="Hapus"
-                              aria-label={`Hapus ${item.nama_sarana_inventaris}`}
-                            >
-                              <i className="ti ti-trash" />
-                            </button>
+                                <button
+                                  type="button"
+                                  className="btn-icon-action delete"
+                                  onClick={() => handleDelete(item)}
+                                  title="Hapus"
+                                  aria-label={`Hapus ${item.nama_sarana_inventaris}`}
+                                >
+                                  <i className="ti ti-trash" />
+                                </button>
+                              </>
+                            )}
                           </div>
                         </td>
                       </tr>

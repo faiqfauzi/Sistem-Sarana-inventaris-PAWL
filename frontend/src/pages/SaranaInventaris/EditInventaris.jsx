@@ -19,12 +19,15 @@ const emptyOptions = {
   penanggungJawab: [],
 };
 
-export default function EditInventaris({ id, onBack, onSaved }) {
+export default function EditInventaris({ id, onBack, onSaved, currentUser }) {
   const [form, setForm] = useState({ ...emptyForm });
   const [options, setOptions] = useState(emptyOptions);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  const isAdmin = currentUser?.role === "admin";
+  const currentResponsibleId = currentUser?.responsible_id;
 
   useEffect(() => {
     let active = true;
@@ -128,6 +131,9 @@ export default function EditInventaris({ id, onBack, onSaved }) {
       onChange={handleChange}
       onSubmit={handleSubmit}
       onBack={onBack}
+      isAdmin={isAdmin}
+      isEdit={true}
+      currentResponsibleId={currentResponsibleId}
     />
   );
 }

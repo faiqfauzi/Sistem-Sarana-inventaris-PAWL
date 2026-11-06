@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import api from "../../services/api";
+import "./Lokasi.css";
 
 export default function Lokasi({
   onChanged,

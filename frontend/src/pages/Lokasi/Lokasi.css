@@ -1,0 +1,238 @@
+/* =========================================================
+   HALAMAN LOKASI
+========================================================= */
+
+.lokasi-page {
+  width: 100%;
+  min-width: 0;
+}
+
+.lokasi-page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.lokasi-page-heading h1,
+.lokasi-page-heading h2 {
+  margin: 0 0 5px;
+  color: var(--text-main);
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.lokasi-page-heading p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* Kartu konten */
+
+.lokasi-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--white);
+}
+
+.lokasi-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.lokasi-card-header h2 {
+  margin: 0;
+  color: var(--text-main);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* Pencarian */
+
+.lokasi-search {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.lokasi-search input {
+  width: 100%;
+  max-width: 360px;
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--white);
+  color: var(--text-main);
+  font-size: 14px;
+  outline: none;
+}
+
+.lokasi-search input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(32, 107, 196, 0.1);
+}
+
+/* Tabel lokasi */
+
+.lokasi-table-wrapper {
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.lokasi-table {
+  width: 100%;
+  min-width: 600px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.lokasi-table th,
+.lokasi-table td {
+  padding: 12px 16px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.lokasi-table th {
+  border-bottom: 1px solid var(--border);
+  background: #f9fafb;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.lokasi-table td {
+  border-bottom: 1px solid #eef0f2;
+  color: var(--text-main);
+}
+
+.lokasi-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.lokasi-table tbody tr:hover {
+  background: #fafbfc;
+}
+
+/* Tombol aksi */
+
+.lokasi-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.lokasi-actions button {
+  white-space: nowrap;
+}
+
+/* Pesan kosong */
+
+.lokasi-empty-state {
+  padding: 32px 20px;
+  color: var(--text-secondary);
+  text-align: center;
+  font-size: 14px;
+}
+
+/* Form lokasi */
+
+.lokasi-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.lokasi-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lokasi-form-group label {
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.lokasi-form-group input,
+.lokasi-form-group select,
+.lokasi-form-group textarea {
+  width: 100%;
+  min-height: 38px;
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--white);
+  color: var(--text-main);
+  font: inherit;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.lokasi-form-group input:focus,
+.lokasi-form-group select:focus,
+.lokasi-form-group textarea:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(32, 107, 196, 0.1);
+}
+
+.lokasi-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* Responsivitas */
+
+@media (max-width: 768px) {
+  .lokasi-page-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .lokasi-page-heading > button {
+    max-width: 100%;
+  }
+
+  .lokasi-card-header {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 14px;
+  }
+
+  .lokasi-search {
+    align-items: stretch;
+  }
+
+  .lokasi-search input {
+    max-width: none;
+  }
+
+  .lokasi-form-actions {
+    justify-content: stretch;
+  }
+
+  .lokasi-form-actions button {
+    flex: 1;
+  }
+}

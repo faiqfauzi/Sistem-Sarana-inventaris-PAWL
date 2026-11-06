@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import "./MasterSarana.css";
 import api from "../../services/api";
 
 const ITEMS_PER_PAGE = 10;

@@ -8,7 +8,7 @@ import MainLayout from "./layouts/MainLayout";
 import Sidebar from "./layouts/Sidebar";
 import Navbar from "./layouts/Navbar";
 
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./pages/Dashboard/Dashboard";
 
 import MasterSarana from "./pages/MasterSarana/MasterSarana";
 import DetailMasterSarana from "./pages/MasterSarana/DetailMasterSarana";
@@ -720,38 +720,11 @@ export default function App() {
 
         <div className="main-content">
           <Navbar
-            title={currentPage.title}
-            subtitle={currentPage.subtitle}
-            onMenuClick={() => setSidebarOpen((previous) => !previous)}
+            pageTitle="Sistem Sarana Inventaris"
+            username={user.username}
+            onToggleSidebar={() => setSidebarOpen((previous) => !previous)}
+            onLogout={handleLogout}
           />
-
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              alignItems: "center",
-              gap: "12px",
-              padding: "8px 24px 0",
-            }}
-          >
-            <span style={{ color: "#64748b", fontSize: "14px" }}>
-              {user.username}
-            </span>
-
-            <button
-              type="button"
-              onClick={handleLogout}
-              style={{
-                padding: "8px 14px",
-                border: "1px solid #d1d5db",
-                borderRadius: "6px",
-                background: "#fff",
-                cursor: "pointer",
-              }}
-            >
-              <i className="ti ti-logout" /> Logout
-            </button>
-          </div>
 
           <main className="page-container">
             {page === "dashboard" && (

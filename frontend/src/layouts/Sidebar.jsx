@@ -71,11 +71,6 @@ export default function Sidebar({
             </button>
           ))}
         </nav>
-
-        <div className="sidebar-bottom">
-          <span className="sidebar-bottom-dot" />
-          <span>Sistem Sarana Inventaris</span>
-        </div>
       </aside>
     </>
   );

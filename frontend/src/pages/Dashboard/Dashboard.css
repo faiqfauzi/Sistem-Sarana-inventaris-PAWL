@@ -1,0 +1,131 @@
+/* =========================================
+   DASHBOARD - STATISTIK
+========================================= */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+  margin: 0;
+  align-items: stretch;
+}
+
+/* Kartu statistik */
+
+.stat-card {
+  min-width: 0;
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid #e6e8eb;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgb(24 36 51 / 4%);
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgb(24 36 51 / 8%);
+}
+
+.stat-card-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 20px 21px 16px;
+}
+
+/* Ikon dan informasi statistik */
+
+.stat-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.stat-icon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  color: #206bc4;
+  background: #edf4fd;
+  border-radius: 13px;
+  font-size: 26px;
+}
+
+.stat-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.stat-title {
+  margin-bottom: 5px;
+  color: #667085;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.stat-value {
+  color: #182433;
+  font-size: 29px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+  overflow-wrap: anywhere;
+}
+
+/* Garis pemisah dan deskripsi */
+
+.stat-description {
+  margin-top: 18px;
+  padding-top: 14px;
+  color: #98a2b3;
+  font-size: 13px;
+  line-height: 1.5;
+  border-top: 1px solid #eaecf0;
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 1200px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (max-width: 576px) {
+  .stats-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .stat-card-body {
+    padding: 17px;
+  }
+
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 23px;
+  }
+
+  .stat-value {
+    font-size: 25px;
+  }
+
+  .stat-description {
+    margin-top: 14px;
+    padding-top: 12px;
+  }
+}

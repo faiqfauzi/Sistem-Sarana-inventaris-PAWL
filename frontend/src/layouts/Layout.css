@@ -1,0 +1,549 @@
+/* =========================================
+   LAYOUT UTAMA
+========================================= */
+
+:root {
+  --sidebar-width: 268px;
+  --navbar-height: 64px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.app-container {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.page-wrapper {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 100vh;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+.main-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  width: calc(100% - var(--sidebar-width));
+  min-width: 0;
+  min-height: 100vh;
+  margin-left: var(--sidebar-width);
+  padding-top: 70px;
+}
+
+/* =========================================
+   SIDEBAR
+   Mengikuti class di Sidebar.jsx
+========================================= */
+
+.sidebar-custom {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1050;
+  display: flex;
+  flex-direction: column;
+  width: var(--sidebar-width);
+  height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: #ffffff;
+  border-right: 1px solid #e6e8eb;
+  transition: transform 0.25s ease;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  height: 70px;
+  min-height: 70px;
+  padding: 8px 22px;
+  border-bottom: 1px solid #e6e8eb;
+}
+
+.sidebar-logo-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  text-decoration: none;
+}
+
+.sidebar-company-logo {
+  display: block;
+  width: 180px;
+  max-width: 100%;
+  height: 54px;
+  object-fit: contain;
+}
+
+.logo-fallback {
+  display: none;
+  color: #182433;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  padding: 20px 12px;
+}
+
+.sidebar-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+  color: #667085;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.sidebar-link:hover {
+  color: #206bc4;
+  background: #f1f6fc;
+}
+
+.sidebar-link.active {
+  color: #206bc4;
+  font-weight: 600;
+  background: #eaf2fc;
+}
+
+.sidebar-link.active::before {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 0;
+  width: 3px;
+  background: #206bc4;
+  border-radius: 0 3px 3px 0;
+  content: "";
+}
+
+.sidebar-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  font-size: 19px;
+}
+
+.sidebar-link.active .sidebar-icon {
+  color: #206bc4;
+}
+
+.nav-link-title {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-bottom {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 16px 18px;
+  color: #667085;
+  font-size: 12px;
+  border-top: 1px solid #e6e8eb;
+}
+
+.sidebar-bottom-dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  background: #2b8a3e;
+  border-radius: 50%;
+}
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1040;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  background: rgb(24 36 51 / 45%);
+  border: 0;
+}
+
+/* =========================================
+   NAVBAR
+   Mengikuti class di Navbar.jsx
+========================================= */
+
+/* NAVBAR */
+
+.navbar-custom {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: var(--sidebar-width);
+  z-index: 1000;
+  width: auto;
+  min-height: 70px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.navbar-inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 70px;
+  padding: 0 28px 0 16px;
+}
+
+.navbar-title-main {
+  flex: 1;
+  min-width: 0;
+  color: #182433;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.sidebar-toggle {
+  display: none;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  color: #667085;
+  background: #fff;
+  border: 1px solid #e6e8eb;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.navbar-profile {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.navbar-profile-trigger {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 6px 0 6px 10px;
+  color: #182433;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.navbar-profile-avatar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  background: #206bc4;
+  border-radius: 50%;
+}
+
+.navbar-profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.navbar-profile-name {
+  color: #344054;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.navbar-profile-role {
+  color: #98a2b3;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.navbar-profile-chevron {
+  margin-left: 20px;
+  color: #98a2b3;
+  font-size: 16px;
+}
+
+.navbar-dropdown-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1001;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: 0;
+  cursor: default;
+}
+
+.navbar-profile-dropdown {
+  position: absolute;
+  top: calc(100% + 14px);
+  right: -10px;
+  z-index: 1002;
+  width: 268px;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #e6e8eb;
+  border-radius: 11px;
+  box-shadow: 0 8px 28px rgb(16 24 40 / 12%);
+}
+
+.navbar-dropdown-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 15px;
+}
+
+.navbar-dropdown-divider {
+  height: 1px;
+  background: #eaecf0;
+}
+
+.navbar-dropdown-logout {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px 2px;
+  color: #d63939;
+  font-size: 14px;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.navbar-dropdown-logout:hover {
+  background: #fff1f0;
+}
+
+/* RESPONSIVE NAVBAR */
+
+@media (min-width: 769px) {
+  .sidebar-toggle {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar-inner {
+    gap: 12px;
+    padding: 0 16px;
+  }
+
+  .navbar-custom {
+    left: 0;
+  }
+
+  .sidebar-toggle {
+    display: inline-flex;
+  }
+
+  .navbar-profile-info,
+  .navbar-profile-chevron {
+    display: none;
+  }
+
+  .navbar-profile-dropdown {
+    right: 0;
+    width: 250px;
+  }
+}
+
+@media (max-width: 420px) {
+  .navbar-inner {
+    gap: 8px;
+    padding: 0 12px;
+  }
+
+  .navbar-title-main {
+    font-size: 13px;
+  }
+
+  .navbar-profile-avatar {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (min-width: 769px) {
+  .sidebar-custom {
+    transform: translateX(0);
+  }
+
+  .sidebar-overlay {
+    display: none;
+  }
+
+  .sidebar-toggle {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar-custom {
+    z-index: 1050;
+    transform: translateX(-100%);
+  }
+
+  .sidebar-custom.sidebar-open {
+    transform: translateX(0);
+  }
+
+  .main-content {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .navbar-inner {
+    gap: 12px;
+    padding: 0 16px;
+  }
+
+  .sidebar-toggle {
+    display: inline-flex;
+  }
+
+  .navbar-title-main {
+    font-size: 14px;
+  }
+
+  .navbar-user-info,
+  .navbar-chevron {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .navbar-inner {
+    gap: 8px;
+    padding: 0 12px;
+  }
+
+  .navbar-title-main {
+    font-size: 13px;
+  }
+
+  .sidebar-logo {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+}
+
+/* Area profil dan logout di dalam navbar */
+.navbar-account {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.navbar-username {
+  color: #667085;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.navbar-logout {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 7px 12px;
+  color: #182433;
+  font-size: 13px;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.navbar-logout:hover {
+  color: #206bc4;
+  background: #f8fafc;
+  border-color: #206bc4;
+}
+
+.navbar-user-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  color: #206bc4;
+  background: #eaf2fc;
+  border-radius: 50%;
+  font-size: 19px;
+}
+
+@media (max-width: 480px) {
+  .navbar-inner {
+    gap: 8px;
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .navbar-account {
+    gap: 6px;
+  }
+
+  .navbar-username {
+    display: none;
+  }
+
+  .navbar-logout {
+    padding: 7px 9px;
+  }
+
+  .navbar-title-main {
+    font-size: 13px;
+  }
+}

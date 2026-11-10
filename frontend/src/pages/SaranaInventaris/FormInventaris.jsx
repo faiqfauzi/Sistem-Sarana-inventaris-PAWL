@@ -16,8 +16,8 @@ export default function FormInventaris({
   );
 
   return (
-    <div className="master-page">
-      <section className="content-card">
+    <div className="master-page crud-form-page">
+      <section className="content-card crud-form-card">
         <div className="content-card-header">
           <h2>{title}</h2>
         </div>

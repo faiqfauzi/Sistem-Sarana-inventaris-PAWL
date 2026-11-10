@@ -1,6 +1,6 @@
+import "./App.css";
 import { useCallback, useEffect, useState } from "react";
 import api from "./services/api";
-import "./App.css";
 
 import Login from "./pages/Login/Login";
 

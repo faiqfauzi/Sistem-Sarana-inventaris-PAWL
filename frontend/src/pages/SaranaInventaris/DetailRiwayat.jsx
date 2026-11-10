@@ -263,7 +263,7 @@ export default function DetailRiwayat({
   const showForm = action === "create" || isEditPage;
 
   const renderForm = () => (
-    <form className="content-card" onSubmit={handleSubmit}>
+    <form className="content-card crud-form-card" onSubmit={handleSubmit}>
       <div className="content-card-header">
         <h3>
           {action === "create"

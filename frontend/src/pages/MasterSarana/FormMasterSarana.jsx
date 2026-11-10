@@ -8,8 +8,8 @@ export default function FormMasterSarana({
   onBack,
 }) {
   return (
-    <div className="master-page master-form-page">
-      <div className="content-card">
+    <div className="master-page master-form-page crud-form-page">
+      <div className="content-card crud-form-card">
         <div className="content-card-header">
           <h2>{title}</h2>
         </div>

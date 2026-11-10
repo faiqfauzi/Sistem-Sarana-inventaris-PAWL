@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 import api from "../../services/api";
-import "./ManajemenAkun.css";
 
 export default function ManajemenAkun({ onTambah, onEdit }) {
   const [accounts, setAccounts] = useState([]);

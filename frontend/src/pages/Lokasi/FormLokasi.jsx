@@ -61,7 +61,7 @@ export default function FormLokasi({
   }
 
   return (
-    <section className="content-card">
+    <section className="content-card lokasi-form-card crud-form-card">
       <div className="content-card-header">
         <div>
           <h2>{isEdit ? "Edit Lokasi" : "Tambah Lokasi"}</h2>

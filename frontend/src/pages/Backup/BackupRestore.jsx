@@ -1,6 +1,5 @@
 import { useRef, useState } from "react";
 import api from "../../services/api";
-import "./BackupRestore.css";
 
 export default function BackupRestore() {
   const fileInputRef = useRef(null);

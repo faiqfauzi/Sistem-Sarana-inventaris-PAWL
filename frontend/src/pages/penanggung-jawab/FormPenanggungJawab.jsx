@@ -26,7 +26,7 @@ export default function FormPenanggungJawab({
   };
 
   return (
-    <section className="content-card">
+    <section className="content-card crud-form-card">
       <div className="content-card-header">
         <div>
           <h3>{title}</h3>

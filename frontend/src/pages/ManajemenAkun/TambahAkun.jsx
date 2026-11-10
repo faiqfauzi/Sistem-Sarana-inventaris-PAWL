@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
-import "./ManajemenAkun.css";
 
 const initialForm = {
   username: "",
@@ -85,8 +84,8 @@ export default function TambahAkun({ onBack, onSaved }) {
   };
 
   return (
-    <div className="page-content account-page">
-      <div className="card account-form-card">
+    <div className="page-content account-page crud-form-page">
+      <div className="card account-form-card crud-form-card">
         <div className="account-form-header">
           <div className="account-form-heading">
             <div className="account-icon">

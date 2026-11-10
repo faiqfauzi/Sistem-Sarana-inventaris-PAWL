@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import api from "../../services/api";
-import "./SaranaInventaris.css";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -496,22 +495,44 @@ export default function Inventaris({
                       ‹
                     </button>
 
-                    {Array.from(
-                      { length: totalPages },
-                      (_, index) => index + 1,
-                    ).map((pageNumber) => (
+                    <button
+                      type="button"
+                      className="pagination-btn active"
+                      onClick={() => setPage(page)}
+                      aria-current="page"
+                      aria-label={`Halaman ${page}, halaman saat ini`}
+                    >
+                      {page}
+                    </button>
+
+                    {page < totalPages && (
                       <button
-                        key={pageNumber}
                         type="button"
-                        className={`pagination-btn ${
-                          pageNumber === page ? "active" : ""
-                        }`}
-                        onClick={() => setPage(pageNumber)}
-                        aria-current={pageNumber === page ? "page" : undefined}
+                        className="pagination-btn"
+                        onClick={() => setPage(page + 1)}
+                        aria-label={`Ke halaman ${page + 1}`}
                       >
-                        {pageNumber}
+                        {page + 1}
                       </button>
-                    ))}
+                    )}
+
+                    {page + 1 < totalPages && (
+                      <>
+                        {page + 2 < totalPages && (
+                          <span className="pagination-ellipsis" aria-hidden="true">
+                            …
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          className="pagination-btn"
+                          onClick={() => setPage(totalPages)}
+                          aria-label={`Ke halaman terakhir, ${totalPages}`}
+                        >
+                          {totalPages}
+                        </button>
+                      </>
+                    )}
 
                     <button
                       type="button"
